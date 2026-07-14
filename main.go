@@ -17,7 +17,7 @@ var handles = commands{
 		"register": handleRegister,
 		"reset": handleReset,
 		"users": handleUsers,
-		"agg": handleAgg,
+		"agg": middlewareLoggedIn(handleAgg),
 		"addfeed": middlewareLoggedIn(handleAddFeed),
 		"feeds": handleFeeds,
 		"follow": middlewareLoggedIn(handleFollow),
