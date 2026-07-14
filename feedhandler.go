@@ -10,14 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handleAddFeed(s *state, cmd command) error {
+func handleAddFeed(s *state, cmd command, user database.User) error {
 	if n := len(cmd.arguments); n != 2 {
 		return formatArgErr("addfeed <name> <url>", 2, n)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.Current_user_name)
-	if err != nil {
-		return fmt.Errorf("User %v does not exist within the database: %v\n", s.cfg.Current_user_name, err)
 	}
 	
 	if _, err := fetchFeed(context.Background(), cmd.arguments[1]); err != nil {
@@ -79,7 +74,7 @@ func handleFeeds(s *state, cmd command) error {
 }
 
 // Creates a feed follow record for the current user
-func handleFollow(s *state, cmd command) error {
+func handleFollow(s *state, cmd command, user database.User) error {
 	if n := len(cmd.arguments); n != 1 {
 		return formatArgErr("follow <url>", 1, n)
 	}
@@ -87,11 +82,6 @@ func handleFollow(s *state, cmd command) error {
 	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.arguments[0])
 	if err != nil {
 		return fmt.Errorf("Failed to retrive feed: %v\n", err)
-	}
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.Current_user_name)
-	if err != nil {
-		return fmt.Errorf("Failed to retive user: %v\n", err)
 	}
 
 	followParams := database.CreateFeedFollowParams{
@@ -113,7 +103,7 @@ func handleFollow(s *state, cmd command) error {
 }
 
 // Prints a list of all the feeds the current user is following
-func handleFollowing(s *state, cmd command) error {
+func handleFollowing(s *state, cmd command, user database.User) error {
 	if n := len(cmd.arguments); n != 0 {
 		return formatArgErr("following", 0, n)
 	}

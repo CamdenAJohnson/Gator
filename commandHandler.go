@@ -19,21 +19,17 @@ func (c *commands) register(name string, f func(*state, command) error) {
 }
 
 func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) error) func(*state, command) error {
-	var f func(*state, command) error
+	f := func(s *state, cmd command) error {
+		user, err := s.db.GetUser(context.Background(), s.cfg.Current_user_name)
+		if err != nil || user.Name != s.cfg.Current_user_name {
+			return fmt.Errorf("User check failed: %v\n", err)
+		}
 
-	
+		return handler(s, cmd, user)
+	}
 
 	return f
 }
-
-
-func handlerAddFeed(s *state, cmd command, user database.User) error {
-
-	
-
-	return nil
-}
-
 
 func formatArgErr(usage string, expected, got int) error {
 	fmt.Printf("Usage: %v\n", usage)

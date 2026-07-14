@@ -18,10 +18,10 @@ var handles = commands{
 		"reset": handleReset,
 		"users": handleUsers,
 		"agg": handleAgg,
-		"addfeed": handleAddFeed,
+		"addfeed": middlewareLoggedIn(handleAddFeed),
 		"feeds": handleFeeds,
-		"follow": handleFollow,
-		"following": handleFollowing,
+		"follow": middlewareLoggedIn(handleFollow),
+		"following": middlewareLoggedIn(handleFollowing),
 	},
 }
 
