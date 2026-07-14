@@ -22,6 +22,7 @@ var handles = commands{
 		"feeds": handleFeeds,
 		"follow": middlewareLoggedIn(handleFollow),
 		"following": middlewareLoggedIn(handleFollowing),
+		"unfollow": middlewareLoggedIn(handleUnfollow),
 	},
 }
 
