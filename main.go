@@ -23,6 +23,7 @@ var handles = commands{
 		"follow": middlewareLoggedIn(handleFollow),
 		"following": middlewareLoggedIn(handleFollowing),
 		"unfollow": middlewareLoggedIn(handleUnfollow),
+		"browse": middlewareLoggedIn(handleBrowse),
 	},
 }
 

@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"html"
 	"log"
 	"strconv"
 	"time"
 
 	"github.com/CamdenAJohnson/Gator/internal/database"
+	"github.com/google/uuid"
 )
 
 // Registers the give coomand function
@@ -91,11 +93,66 @@ func aggHelper(s *state, user database.User) error {
 	}
 
 	fmt.Printf("Title: %v\nDescription: %v\n", feed.Channel.Title, feed.Channel.Description)
-	for n, elem := range feed.Channel.Item {
-		fmt.Printf("Item: %v\nTitle: %v\nDescription: %v\n", n, elem.Title, elem.Description)
+	for _, elem := range feed.Channel.Item {
+		var sqlTime sql.NullTime
+		t, err := time.Parse(time.RFC1123Z ,elem.PubDate)
+		if err != nil {
+			sqlTime = sql.NullTime{
+				Time: time.Now(),
+				Valid: false,
+			}
+		} else {
+			sqlTime = sql.NullTime{
+				Time: t,
+				Valid: true,
+			}
+		}
+
+		postParams := database.CreatePostParams{
+		ID: uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Title: html.UnescapeString(elem.Title),
+		Url: elem.Link,
+		Description: sql.NullString{String: html.UnescapeString(elem.Description), Valid: true},
+		PublishedAt: sqlTime,
+		FeedID: oldestFeed.ID,
+		}
+
+		if _, err := s.db.CreatePost(context.Background(), postParams); err != nil {
+			continue
+		}
 	}
 
 	fmt.Printf("\n\n-----------------------\n\n")
+
+	return nil
+}
+
+func handleBrowse(s *state, cmd command, user database.User) error {
+	if n := len(cmd.arguments); n != 1 {
+		return formatArgErr("browse <limit>", 1, n)
+	}
+
+	num, err := strconv.Atoi(cmd.arguments[0])
+	if err != nil {
+		return fmt.Errorf("Argument is not a number: %v\n", err)
+	}
+	if num < 2 { num = 2 }
+	
+	postParams := database.GetPostForUserParams{
+		UserID: user.ID,
+		Limit: int32(num),
+	}
+
+	posts, err := s.db.GetPostForUser(context.Background(), postParams)
+	if err != nil {
+		return fmt.Errorf("Failed to retrive post: %v\n", err)
+	}
+
+	for n, elem := range posts {
+		fmt.Printf("Item: %v\nTitle: %v\nDescription: %v\n", n, elem.Title, elem.Description)
+	}
 
 	return nil
 }
