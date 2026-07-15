@@ -1,6 +1,6 @@
 Gator is a RSSFeed CLI.
 
-Gator uses postgresql to store users and feeds.
+gator uses postgresql to store users and feeds.
 
 List of commands:
 - register: Register a user. Usage: "register 'name'"
